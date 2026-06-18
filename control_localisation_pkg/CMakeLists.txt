@@ -1,0 +1,39 @@
+cmake_minimum_required(VERSION 3.8)
+project(control_localisation_pkg)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# Find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(ackermann_msgs REQUIRED)
+
+# --- ADD EXECUTABLES ---
+# Define the Odometry/Localiser node
+add_executable(localiser_node src/localiser.cpp)
+ament_target_dependencies(localiser_node rclcpp geometry_msgs sensor_msgs)
+
+# Define the Gap Follower/Control node
+add_executable(control_node src/control.cpp)
+ament_target_dependencies(control_node rclcpp sensor_msgs ackermann_msgs)
+
+# --- INSTALL RULES ---
+# This tells ROS where to place the compiled binaries
+install(TARGETS
+  localiser_node
+  control_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
