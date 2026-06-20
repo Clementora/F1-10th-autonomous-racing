@@ -1,5 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp> // Changed from PoseStamped
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <cmath>
 
@@ -16,12 +16,13 @@ public:
         my_subscription = this->create_subscription<sensor_msgs::msg::JointState>(
             "/joint_states", 10, std::bind(&Localiser::odom_callback, this, _1));
             
-        my_publisher = this->create_publisher<geometry_msgs::msg::PoseStamped>("/localisation", 10);
+        // Changed to Odometry publisher
+        my_publisher = this->create_publisher<nav_msgs::msg::Odometry>("/localisation", 10);
     }   
   
 private:
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr my_subscription;
-    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr my_publisher;
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr my_publisher;
 
     // URDF Constants
     const double WHEEL_RADIUS = 0.04;  
@@ -32,7 +33,6 @@ private:
     bool initialized_ = false;
     double prev_rl_pos_ = 0.0, prev_rr_pos_ = 0.0;
     rclcpp::Time last_time_;
-
     
     void odom_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
     {
@@ -77,16 +77,32 @@ private:
         theta_ += d_theta;
         theta_ = std::atan2(std::sin(theta_), std::cos(theta_)); 
 
-        geometry_msgs::msg::PoseStamped out_msg;
-        out_msg.header = msg->header;
-        out_msg.header.frame_id = "odom";
-        out_msg.pose.position.x = x_;
-        out_msg.pose.position.y = y_;
-        out_msg.pose.position.z = 0.0;
-        out_msg.pose.orientation.x = 0.0;
-        out_msg.pose.orientation.y = 0.0;
-        out_msg.pose.orientation.z = std::sin(theta_ / 2.0);
-        out_msg.pose.orientation.w = std::cos(theta_ / 2.0);
+        // --- NEW ODOMETRY MESSAGE SETUP ---
+        nav_msgs::msg::Odometry out_msg;
+        out_msg.header.stamp = current_time;
+        out_msg.header.frame_id = "odom";       // The fixed starting point
+        out_msg.child_frame_id = "base_link";   // The car itself
+
+        // Position
+        out_msg.pose.pose.position.x = x_;
+        out_msg.pose.pose.position.y = y_;
+        out_msg.pose.pose.position.z = 0.0;
+        out_msg.pose.pose.orientation.x = 0.0;
+        out_msg.pose.pose.orientation.y = 0.0;
+        out_msg.pose.pose.orientation.z = std::sin(theta_ / 2.0);
+        out_msg.pose.pose.orientation.w = std::cos(theta_ / 2.0);
+
+        // Velocity
+        out_msg.twist.twist.linear.x = v_;
+        out_msg.twist.twist.angular.z = d_theta / dt;
+
+        // Base Covariance (Tell the EKF we trust the wheels, but they aren't perfect)
+        out_msg.pose.covariance[0] = 0.01;   // X
+        out_msg.pose.covariance[7] = 0.01;   // Y
+        out_msg.pose.covariance[35] = 0.05;  // Yaw
+        
+        out_msg.twist.covariance[0] = 0.01;  // Linear velocity
+        out_msg.twist.covariance[35] = 0.05; // Angular velocity
 
         my_publisher->publish(out_msg);
     }
