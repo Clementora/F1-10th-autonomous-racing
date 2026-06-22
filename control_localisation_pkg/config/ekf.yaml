@@ -17,10 +17,10 @@ ekf_filter_node:
     # Wheel Odometry 
     odom0: /localisation
     # X, Y, Z, Roll, Pitch, Yaw, Vx, Vy, Vz, Vroll, Vpitch, Vyaw, Ax, Ay, Az
-    odom0_config: [true,  true,  false,  # We want X and Y position
-                   false, false, true,   # We want Yaw (rotation)
-                   true,  false, false,  # We want Forward Speed (Vx)
-                   false, false, true,   # We want Turn Speed (Vyaw)
+    odom0_config: [true,  true,  false,  #X and Y position
+                   false, false, true,   #Yaw (rotation)
+                   true,  false, false,  #Forward Speed (Vx)
+                   false, false, true,   #Turn Speed (Vyaw)
                    false, false, false]
     
     # Webots IMU (Accelerometer) 
@@ -30,7 +30,7 @@ ekf_filter_node:
                   false, false, false,
                   false, false, false,
                   false, false, false,
-                  true,  true,  false]   # We ONLY want X and Y Acceleration
+                  true,  true,  false]   # X and Y Acceleration
                   
-    # Ignores Z-axis gravity pull so the car doesn't think it's flying
+    
     imu0_remove_gravitational_acceleration: true

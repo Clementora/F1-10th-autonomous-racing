@@ -77,7 +77,7 @@ private:
         theta_ += d_theta;
         theta_ = std::atan2(std::sin(theta_), std::cos(theta_)); 
 
-        // --- NEW ODOMETRY MESSAGE SETUP ---
+        // NEW ODOMETRY MESSAGE SETUP 
         nav_msgs::msg::Odometry out_msg;
         out_msg.header.stamp = current_time;
         out_msg.header.frame_id = "odom";       // The fixed starting point
