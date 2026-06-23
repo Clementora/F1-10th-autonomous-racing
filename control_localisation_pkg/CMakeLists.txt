@@ -21,10 +21,13 @@ ament_target_dependencies(localiser_node rclcpp geometry_msgs sensor_msgs nav_ms
 add_executable(control_node src/control.cpp)
 ament_target_dependencies(control_node rclcpp sensor_msgs ackermann_msgs)
 
+add_executable(disparity_extender src/disparity_extender.cpp)
+ament_target_dependencies(disparity_extender rclcpp sensor_msgs ackermann_msgs nav_msgs)
 
 install(TARGETS
   localiser_node
   control_node
+  disparity_extender
   DESTINATION lib/${PROJECT_NAME}
 )
 
