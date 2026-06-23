@@ -1,7 +1,7 @@
 ekf_filter_node:
   ros__parameters:
     
-    use_sim_time: true 
+    use_sim_time: false # CHANGED: False for the real physical car else TRUE
     
     frequency: 30.0
     two_d_mode: true
@@ -17,20 +17,23 @@ ekf_filter_node:
     # Wheel Odometry 
     odom0: /localisation
     # X, Y, Z, Roll, Pitch, Yaw, Vx, Vy, Vz, Vroll, Vpitch, Vyaw, Ax, Ay, Az
-    odom0_config: [true,  true,  false,  #X and Y position
-                   false, false, true,   #Yaw (rotation)
-                   true,  false, false,  #Forward Speed (Vx)
-                   false, false, true,   #Turn Speed (Vyaw)
+    odom0_config: [true,  true,  false,  # X and Y position
+                   false, false, true,   # Yaw (rotation)
+                   true,  false, false,  # Forward Speed (Vx)
+                   false, false, true,   # Turn Speed (Vyaw)
                    false, false, false]
     
-    # Webots IMU (Accelerometer) 
-    imu0: /imu/data
+    # Real Hardware BNO055 IMU
+    imu0: /imu_clem/data                      
     # X, Y, Z, Roll, Pitch, Yaw, Vx, Vy, Vz, Vroll, Vpitch, Vyaw, Ax, Ay, Az
-    imu0_config: [false, false, false,
-                  false, false, false,
-                  false, false, false,
-                  false, false, false,
-                  true,  true,  false]   # X and Y Acceleration
+    imu0_config: [false, false, false,   # Position X, Y, Z
+                  false, false, true,    # CHANGED: Enable YAW
+                  false, false, false,   # Velocity Vx, Vy, Vz
+                  false, false, true,    # CHANGED: Enable YAW RATE (Vyaw)
+                  false, false, false]   # CHANGED: Disable Accelerations (Ax, Ay, Az are false)
                   
+    imu0_differential: false
+    imu0_relative: true                  # ADDED: Prevents IMU and Odom from fighting over absolute heading
     
-    imu0_remove_gravitational_acceleration: true
+    # Can be omitted or set to false since acceleration is disabled
+    imu0_remove_gravitational_acceleration: false
